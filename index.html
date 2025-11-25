@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MUIS Associados — Gestão de Microcrédito (Profissional)</title>
+  <style>
+    /* ====== Variáveis e Reset ====== */
+    :root{
+      --bg:#f7f8fa; --card:#fff; --text:#222; --muted:#666; --primary:#0E7AC7; --accent:#18A999;
+      --danger:#CF4B4B; --ok:#19a55c; --border:#e3e7ee; --glass: rgba(255,255,255,0.6);
+      --bar:#0E7AC7; --bar2:#18A999; --bar3:#CF4B4B;
+    }
+    .dark{
+      --bg:#0f1216; --card:#14171b; --text:#e9eef7; --muted:#98a0b2; --primary:#4CA8E0; --accent:#43C6B9;
+      --danger:#ff6b6b; --ok:#4bd486; --border:#22262b; --glass: rgba(255,255,255,0.03);
+      --bar:#4CA8E0; --bar2:#43C6B9; --bar3:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);transition:all .18s}
+    a{text-decoration:none;color:var(--primary)}
+    .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;grid-template-areas:"topbar topbar" "sidebar main";height:100vh}
+    .topbar{grid-area:topbar;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;border-bottom:1px solid var(--border);background:var(--card)}
+    .brand{display:flex;align-items:center;gap:.75rem}
+    .brand-logo{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-weight:700}
+    .brand-name{font-weight:700}
+    .top-actions{display:flex;align-items:center;gap:.5rem}
+    .user-info{display:flex;align-items:center;gap:.5rem}
+    .btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:.45rem .7rem;border-radius:8px;cursor:pointer}
+    .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+    .btn-ok{background:var(--ok);border-color:var(--ok);color:#fff}
+    .sidebar{grid-area:sidebar;border-right:1px solid var(--border);background:var(--card);padding:1rem;overflow:auto}
+    .nav{display:flex;flex-direction:column;gap:.25rem;margin-top:.75rem}
+    .nav a{padding:.6rem .7rem;border-radius:8px;color:var(--text);border:1px solid transparent}
+    .nav a.active{background:var(--bg);border-color:var(--border);font-weight:600}
+    .main{grid-area:main;overflow:auto;padding:1rem 1.25rem}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem}
+    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+    .row-12{grid-column:span 12}
+    .row-8{grid-column:span 8}
+    .row-6{grid-column:span 6}
+    .row-4{grid-column:span 4}
+    .kpi{display:flex;align-items:center;gap:.75rem}
+    .kpi .num{font-size:1.5rem;font-weight:700}
+    .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
+    table{width:100%;border-collapse:collapse;background:var(--card)}
+    th,td{padding:.6rem;border-bottom:1px solid var(--border);text-align:left}
+    th{font-size:.85rem;color:var(--muted)}
+    .tools{display:flex;gap:.5rem;flex-wrap:wrap}
+    input,select,textarea{padding:.6rem .7rem;border-radius:8px;border:1px solid var(--border);background:var(--glass);color:var(--text)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;place-items:center;z-index:40}
+    .modal{width:min(880px,96vw);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem}
+    .modal.show{display:grid}
+    .role-badge{padding:.25rem .5rem;border-radius:8px;font-size:.85rem;border:1px solid var(--border)}
+    .small{font-size:.85rem;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .flex{display:flex;gap:.5rem;align-items:center}
+    .center{display:flex;align-items:center;justify-content:center}
+    .bars{display:flex;gap:.4rem;align-items:flex-end;height:140px}
+    .bar{background:var(--bar);border-radius:6px 6px 0 0;width:28px}
+    .legend{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem}
+    .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:.3rem}
+    .dot1{background:var(--bar)}
+    .dot2{background:var(--bar2)}
+    .dot3{background:var(--bar3)}
+    .heatgrid{display:grid;grid-template-columns:repeat(6, 1fr);gap:.25rem}
+    .heatcell{height:24px;border-radius:6px;background:var(--bg);border:1px solid var(--border)}
+    .heatcell[data-level="1"]{background:rgba(14,122,199,.15)}
+    .heatcell[data-level="2"]{background:rgba(14,122,199,.3)}
+    .heatcell[data-level="3"]{background:rgba(14,122,199,.5)}
+    .heatcell[data-level="4"]{background:rgba(14,122,199,.7)}
+    .heatcell[data-level="5"]{background:rgba(14,122,199,.9)}
+    @media (max-width:920px){.app{grid-template-columns:1fr;grid-template-areas:"topbar" "main"} .sidebar{display:none} .row-4,.row-6,.row-8{grid-column:span 12}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">M</div>
+        <div>
+          <div class="brand-name">MUIS Associados</div>
+          <small class="small">Gestão de Microcrédito</small>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="flex">
+          <div class="role-badge" id="currentRole">Visitante</div>
+          <select id="roleSelect" class="btn" title="Entrar como">
+            <option value="visitor">Entrar como...</option>
+            <option value="client">Cliente (simular)</option>
+            <option value="ceo">CEO / Gestor</option>
+          </select>
+        </div>
+        <div class="user-info">
+          <span class="small" id="userLabel">Não autenticado</span>
+          <button class="btn" id="logoutBtn" style="display:none">Terminar sessão</button>
+        </div>
+        <button class="btn" id="toggleTheme">Tema</button>
+        <button class="btn" id="exportData">Backup</button>
+        <button class="btn-danger" id="resetData">Limpar dados</button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h3>Navegação</h3>
+      <nav class="nav" id="nav">
+        <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#clientes">Clientes</a>
+        <a href="#emprestimos">Empréstimos</a>
+        <a href="#estatisticas">Estatísticas</a>
+        <a href="#relatorios">Relatórios</a>
+        <a href="#config">Configurações</a>
+        <a href="#acesso">Acesso rápido</a>
+        <a href="#login">Login</a>
+      </nav>
+
+      <div style="margin-top:1rem">
+        <p class="small"><strong>Funcionalidades:</strong></p>
+        <ul class="small">
+          <li>Fluxo de pedido e aprovação</li>
+          <li>Amortização básica e pagamentos</li>
+          <li>Exportação CSV/JSON</li>
+          <li>Perfis Cliente e CEO</li>
+          <li>Login por email e palavra‑passe</li>
+          <li>Estatísticas visuais</li>
+        </ul>
+        <div style="margin-top:.5rem">
+          <button class="btn" id="seedExamples">Gerar exemplos</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" id="view">
+      <!-- DASHBOARD -->
+      <section class="view" id="dashboard">
+        <h2>Dashboard</h2>
+        <p class="small">Resumo resumido da carteira — visão adaptativa por papel.</p>
+
+        <div class="grid" style="margin-top:1rem">
+          <div class="card row-4">
+            <div class="kpi">
+              <div class="num" id="kpiClients">0</div>
+              <div><strong>Clientes</strong><p class="small">Registados no sistema</p></div>
+            </div>
+          </div>
+
+          <div class="card row-4">
+            <div class="kpi">
+              <div class="num" id="kpiLoans">0</div>
+              <div><strong>Empréstimos</strong><p class="small">Total de pedidos registados</p></div>
+            </div>
+          </div>
+
+          <div class="card row-4">
+            <div class="kpi">
+              <div class="num" id="kpiExposure">0 MT</div>
+              <div><strong>Exposição</strong><p class="small">Somatório principal</p></div>
+            </div>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Pedidos recentes</strong></div>
+            <div class="table-wrap" style="max-height:220px;overflow:auto">
+              <table><thead><tr><th>Cliente</th><th>Valor</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody id="recentLoans"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Distribuição por status</strong></div>
+            <div id="statusSummary">
+              <p class="small">Em análise: <strong id="stReview">0</strong></p>
+              <p class="small">Aprovado: <strong id="stApproved">0</strong></p>
+              <p class="small">Em pagamento: <strong id="stPaying">0</strong></p>
+              <p class="small">Liquidado: <strong id="stClosed">0</strong></p>
+              <p class="small">Recusado: <strong id="stRejected">0</strong></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CLIENTES -->
+      <section class="view" id="clientes" style="display:none">
+        <h2>Clientes</h2>
+        <p class="small">Registo, edição e login simulado como cliente.</p>
+
+        <div class="grid">
+          <div class="card row-6">
+            <div class="card-head"><strong>Novo cliente</strong></div>
+            <form id="formClient" class="form">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                <div><label>Nome</label><input name="nome" required /></div>
+                <div><label>Documento (BI/Nuit)</label><input name="documento" required /></div>
+                <div><label>Telefone</label><input name="telefone" /></div>
+                <div><label>Email</label><input name="email" type="email"/></div>
+                <div><label>Conta Bancária</label><input name="conta" required /></div>
+                <div style="grid-column:1/3"><label>Endereço</label><input name="endereco" /></div>
+                <div style="grid-column:1/3"><label>Observações</label><textarea name="obs"></textarea></div>
+                <div class="tools" style="grid-column:1/3">
+                  <button class="btn-primary" type="submit">Guardar</button>
+                  <button class="btn" type="reset">Limpar</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Lista</strong><input id="clientSearch" placeholder="Pesquisar..." style="margin-left:.5rem"/></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>Documento</th><th>Telefone</th><th>Email</th><th>Conta</th><th>Ações</th></tr></thead>
+                <tbody id="clientTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EMPRÉSTIMOS -->
+      <section class="view" id="emprestimos" style="display:none">
+        <h2>Empréstimos</h2>
+        <p class="small">Criação de pedidos (cliente) e gestão de carteira (CEO).</p>
+
+        <div class="grid">
+          <div class="card row-6">
+            <div class="card-head"><strong>Novo pedido (Cliente)</strong></div>
+            <form id="formLoan" class="form">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                <div><label>Cliente</label><select name="cliente" id="loanClient" required></select></div>
+                <div><label>Valor (MT)</label><input name="valor" type="number" min="0" required/></div>
+                <div><label>Taxa anual (%)</label><input name="taxa" type="number" min="0" step="0.01" required/></div>
+                <div><label>Prazo (meses)</label><input name="prazo" type="number" min="1" required/></div>
+                <div><label>Garantia</label><input name="garantia"/></div>
+                <div style="grid-column:1/3"><label>Finalidade</label><textarea name="finalidade"></textarea></div>
+                <div class="tools" style="grid-column:1/3">
+                  <button class="btn-primary" type="submit">Registar pedido</button>
+                  <button class="btn" type="reset">Limpar</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head">
+              <strong>Carteira</strong>
+              <div class="tools">
+                <select id="loanStatusFilter">
+                  <option value="">Todos</option>
+                  <option value="em_analise">Em análise</option>
+                  <option value="aprovado">Aprovado</option>
+                  <option value="em_pagamento">Em pagamento</option>
+                  <option value="liquidado">Liquidado</option>
+                  <option value="recusado">Recusado</option>
+                </select>
+                <input id="loanSearch" placeholder="Pesquisar..." />
+              </div>
+            </div>
+
+            <div class="table-wrap" style="max-height:420px;overflow:auto">
+              <table>
+                <thead><tr><th>Cliente</th><th>Valor</th><th>Taxa</th><th>Prazo</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody id="loanTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ESTATÍSTICAS -->
+      <section class="view" id="estatisticas" style="display:none">
+        <h2>Estatísticas</h2>
+        <p class="small">Visão analítica rápida da carteira.</p>
+
+        <div class="grid" style="margin-top:1rem">
+          <div class="card row-8">
+            <div class="card-head"><strong>Barras por status</strong></div>
+            <div class="bars" id="barsStatus"></div>
+            <div class="legend">
+              <span><span class="dot dot1"></span><strong>Status:</strong> Em análise/Aprovado/Em pagamento/Liquidado/Recusado</span>
+            </div>
+          </div>
+
+          <div class="card row-4">
+            <div class="card-head"><strong>Top clientes por exposição</strong></div>
+            <div class="table-wrap" style="max-height:220px;overflow:auto">
+              <table>
+                <thead><tr><th>Cliente</th><th>Exposição (MT)</th></tr></thead>
+                <tbody id="topClients"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Evolução mensal de pedidos</strong></div>
+            <div class="bars" id="barsMonthly"></div>
+            <div class="legend"><span><span class="dot dot2"></span><strong>Pedidos/mês</strong></span></div>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Heatmap de criação por mês</strong></div>
+            <div class="heatgrid" id="heatMonths"></div>
+            <div class="legend"><span><span class="dot dot1"></span><strong>Intensidade:</strong> mais escuro = mais pedidos</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RELATÓRIOS -->
+      <section class="view" id="relatorios" style="display:none">
+        <h2>Relatórios</h2>
+        <p class="small">Indicadores, exportações e query global.</p>
+
+        <div class="grid" style="margin-top:1rem">
+          <div class="card row-12">
+            <div class="card-head"><strong>Indicadores</strong></div>
+            <ul>
+              <li>Total de clientes: <strong id="rClients">0</strong></li>
+              <li>Total de empréstimos: <strong id="rLoans">0</strong></li>
+              <li>Exposição (principal): <strong id="rExposure">0 MT</strong></li>
+              <li>Ticket médio: <strong id="rAvg">0 MT</strong></li>
+              <li>Mix de status: <span id="rMix">—</span></li>
+            </ul>
+            <div class="tools">
+              <button class="btn" id="exportCSV">Exportar CSV (Empréstimos)</button>
+              <button class="btn" id="exportJSON">Exportar JSON (Tudo)</button>
+              <button class="btn" id="exportClientsCSV">Exportar CSV (Clientes)</button>
+            </div>
+          </div>
+
+          <div class="card row-12">
+            <div class="card-head"><strong>Query global</strong></div>
+            <div class="tools">
+              <input id="queryInput" placeholder="Digite sua query (nome, documento, email, conta, status...)" style="flex:1" />
+              <button class="btn" id="runQuery">Executar</button>
+              <button class="btn" id="clearQuery">Limpar</button>
+            </div>
+            <div class="grid" style="margin-top:1rem">
+              <div class="row-6">
+                <div class="card-head"><strong>Resultados — Clientes</strong></div>
+                <div class="table-wrap" style="max-height:240px;overflow:auto">
+                  <table>
+                    <thead><tr><th>Nome</th><th>Documento</th><th>Telefone</th><th>Email</th><th>Conta</th></tr></thead>
+                    <tbody id="queryClients"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="row-6">
+                <div class="card-head"><strong>Resultados — Empréstimos</strong></div>
+                <div class="table-wrap" style="max-height:240px;overflow:auto">
+                  <table>
+                    <thead><tr><th>Cliente</th><th>Valor</th><th>Taxa</th><th>Prazo</th><th>Status</th></tr></thead>
+                    <tbody id="queryLoans"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONFIG -->
+      <section class="view" id="config" style="display:none">
+        <h2>Configurações</h2>
+        <p class="small">Preferências do sistema.</p>
+
+        <div class="grid">
+          <div class="card row-6">
+            <div class="card-head"><strong>Parâmetros</strong></div>
+            <form id="formSettings">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                <div><label>Moeda</label><input name="moeda" value="MT" /></div>
+                <div><label>Taxa padrão (%)</label><input name="taxaPadrao" type="number" step="0.01" value="18"/></div>
+                <div><label>Prazo padrão (meses)</label><input name="prazoPadrao" type="number" value="12"/></div>
+                <div class="tools" style="grid-column:1/3"><button class="btn-primary" type="submit">Guardar</button></div>
+              </div>
+            </form>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Sobre</strong></div>
+            <p class="small">MUIS Associados — plataforma offline de exemplo para gestão de microcrédito.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACESSO RÁPIDO -->
+      <section class="view" id="acesso" style="display:none">
+        <h2>Acesso Rápido</h2>
+        <p class="small">Simula ações como cliente depois de entrar.</p>
+        <div class="grid">
+          <div class="card row-12">
+            <div class="card-head"><strong>Login Simulado</strong></div>
+            <p class="small">Selecione um cliente e clique "Entrar como cliente" no topo para ver a interface cliente.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>Documento</th><th>Ações</th></tr></thead>
+                <tbody id="quickClients"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOGIN -->
+      <section class="view" id="login" style="display:none">
+        <h2>Login</h2>
+        <p class="small">Entre com email e palavra‑passe. Pode criar conta ou entrar.</p>
+
+        <div class="grid">
+          <div class="card row-6">
+            <div class="card-head"><strong>Criar conta</strong></div>
+            <form id="formRegister">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                <div style="grid-column:1/2"><label>Nome</label><input name="nome" required /></div>
+                <div style="grid-column:2/3"><label>Email</label><input name="email" type="email" required /></div>
+                <div style="grid-column:1/2"><label>Palavra‑passe</label><input name="password" type="password" minlength="4" required /></div>
+                <div style="grid-column:2/3">
+                  <label>Papel</label>
+                  <select name="role">
+                    <option value="client">Cliente</option>
+                    <option value="ceo">CEO / Gestor</option>
+                  </select>
+                </div>
+                <div class="tools" style="grid-column:1/3">
+                  <button class="btn-primary" type="submit">Criar conta</button>
+                  <button class="btn" type="reset">Limpar</button>
+                </div>
+              </div>
+            </form>
+            <p class="small muted">Nota: as credenciais são guardadas localmente no seu navegador para demonstração.</p>
+          </div>
+
+          <div class="card row-6">
+            <div class="card-head"><strong>Entrar</strong></div>
+            <form id="formLogin">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                <div><label>Email</label><input name="email" type="email" required /></div>
+                <div><label>Palavra‑passe</label><input name="password" type="password" required /></div>
+                <div class="tools" style="grid-column:1/3">
+                  <button class="btn-primary" type="submit">Entrar</button>
+                  <button class="btn" id="goDashboard" type="button">Ir para dashboard</button>
+                </div>
+              </div>
+            </form>
+            <div class="tools">
+              <button class="btn-danger" id="logoutBtn2" style="display:none">Terminar sessão</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal genérico -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="card-head">
+        <strong id="modalTitle">Detalhes</strong>
+        <div class="tools"><button class="btn" id="modalClose">Fechar</button></div>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ======================
+       Storage e estado
+       ====================== */
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const fmt = new Intl.NumberFormat('pt-PT');
+    const store = {
+      key:'muis_v3',
+      get(){
+        try{ return JSON.parse(localStorage.getItem(this.key) || '{}'); }catch(e){ return {}; }
+      },
+      set(data){ localStorage.setItem(this.key, JSON.stringify(data)); },
+      reset(){ localStorage.removeItem(this.key); }
+    };
+
+    const state = {
+      data: {
+        clients: [],
+        loans: [], // {id, clienteId, clienteNome, valor, taxa, prazo, garantia, finalidade, status, criado, schedule:[], payments:[]}
+        settings: { moeda:'MT', taxaPadrao:18, prazoPadrao:12 },
+        users: [],   // {id,nome,email,password,role}
+        session: null // {userId}
+      },
+      currentRole: 'visitor', // visitor | client | ceo
+      currentClientId: null,
+      load(){
+        const d = store.get();
+        if(d.clients) this.data.clients = d.clients;
+        if(d.loans) this.data.loans = d.loans;
+        if(d.settings) this.data.settings = d.settings;
+        if(d.users) this.data.users = d.users;
+        if(d.session) this.data.session = d.session;
+        if(this.data.session){
+          const u = this.data.users.find(x => x.id === this.data.session.userId);
+          if(u){ this.currentRole = u.role; }
+        }
+      },
+      save(){ store.set(this.data); }
+    };
+
+    /* ======================
+       Navegação e inicialização
+       ====================== */
+    function setActiveView(hash){
+      const target = (hash||'#dashboard').replace('#','');
+      $$('#nav a').forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+target));
+      $$('.view').forEach(v=> v.style.display = (v.id===target)?'block':'none');
+      if(target==='dashboard') renderDashboard();
+      if(target==='clientes'){ renderClients(); fillLoanClients(); renderQuickClients(); }
+      if(target==='emprestimos'){ renderLoans(); fillLoanClients(); }
+      if(target==='relatorios') { renderReports(); clearQueryResults(); }
+      if(target==='estatisticas') renderStats();
+      if(target==='config') renderSettings();
+      if(target==='acesso') renderQuickClients();
+      if(target==='login') renderAuthUI();
+    }
+
+    window.addEventListener('hashchange', ()=>setActiveView(location.hash));
+    document.addEventListener('DOMContentLoaded', ()=>{
+      state.load();
+      bindEvents();
+      setActiveView(location.hash || '#dashboard');
+      applyTheme();
+      refreshRoleUI();
+      renderAuthUI();
+    });
+
+    /* ======================
+       Tema
+       ====================== */
+    function applyTheme(){
+      const t = localStorage.getItem('theme') || 'light';
+      document.body.classList.toggle('dark', t==='dark');
+    }
+    $('#toggleTheme').addEventListener('click', ()=>{
+      const t = document.body.classList.contains('dark')?'light':'dark';
+      localStorage.setItem('theme', t); applyTheme();
+    });
+
+    /* ======================
+       Role / login simulado + sessão real
+       ====================== */
+    $('#roleSelect').addEventListener('change', (e)=>{
+      const role = e.target.value;
+      if(role === 'client'){
+        if(!state.currentClientId){
+          alert('Selecione um cliente na lista rápida ou crie um cliente primeiro.');
+          e.target.value = 'visitor';
+          return;
+        }
+        state.currentRole = 'client';
+      } else if(role === 'ceo'){
+        state.currentRole = 'ceo';
+      } else {
+        state.currentRole = 'visitor';
+        state.currentClientId = null;
+      }
+      refreshRoleUI();
+      setActiveView('#dashboard');
+    });
+
+    function refreshRoleUI(){
+      const user = currentUser();
+      $('#currentRole').textContent = (
+        state.currentRole === 'visitor' ? 'Visitante' :
+        state.currentRole === 'client' ? 'Cliente: ' + (state.data.clients.find(c=>c.id===state.currentClientId)?.nome || user?.nome || '') :
+        'CEO / Gestor'
+      );
+      $('#userLabel').textContent = user ? `${user.nome} (${user.role})` : 'Não autenticado';
+      $('#logoutBtn').style.display = user ? 'inline-block' : 'none';
+      $('#logoutBtn2').style.display = user ? 'inline-block' : 'none';
+    }
+
+    /* ======================
+       Dashboard
+       ====================== */
+    function renderDashboard(){
+      const {clients, loans, settings} = state.data;
+      $('#kpiClients').textContent = clients.length;
+      $('#kpiLoans').textContent = loans.length;
+      const exposure = loans.reduce((s,l)=> s + Number(l.valor||0), 0);
+      $('#kpiExposure').textContent = fmt.format(exposure) + ' ' + settings.moeda;
+      const counts = { em_analise:0, aprovado:0, em_pagamento:0, liquidado:0, recusado:0 };
+      loans.forEach(l=> counts[l.status] = (counts[l.status]||0)+1 );
+      $('#stReview').textContent = counts.em_analise;
+      $('#stApproved').textContent = counts.aprovado;
+      $('#stPaying').textContent = counts.em_pagamento;
+      $('#stClosed').textContent = counts.liquidado;
+      $('#stRejected').textContent = counts.recusado;
+      const tbody = $('#recentLoans'); tbody.innerHTML = '';
+      loans.slice(-6).reverse().forEach(l=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${l.clienteNome}</td><td>${fmt.format(l.valor)}</td><td>${l.prazo}m</td><td>${labelStatus(l.status)}</td>
+          <td class="tools">
+            <button class="btn" data-view-loan="${l.id}">Ver</button>
+            ${state.currentRole === 'ceo' ? `<button class="btn-ok" data-approve="${l.id}">Aprovar</button><button class="btn-danger" data-reject="${l.id}">Recusar</button>` : ''}
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ======================
+       Clientes
+       ====================== */
+    function renderClients(){
+      const q = ($('#clientSearch').value||'').toLowerCase();
+      const tbody = $('#clientTable'); tbody.innerHTML = '';
+      state.data.clients
+        .filter(c=> [c.nome,c.documento,c.telefone,c.email,c.conta].join(' ').toLowerCase().includes(q))
+        .forEach(c=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${c.nome}</td><td>${c.documento||'-'}</td><td>${c.telefone||'-'}</td><td>${c.email||'-'}</td><td>${c.conta||'-'}</td>
+            <td class="tools">
+              <button class="btn" data-view-client="${c.id}">Ver</button>
+              <button class="btn" data-edit-client="${c.id}">Editar</button>
+              <button class="btn" data-login-client="${c.id}">Entrar como</button>
+              <button class="btn-danger" data-del-client="${c.id}">Apagar</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+    }
+
+    $('#clientSearch').addEventListener('input', renderClients);
+    $('#formClient').addEventListener('submit', e=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const c = Object.fromEntries(fd.entries());
+      c.id = id(); c.created = Date.now();
+      state.data.clients.push(c);
+      state.save();
+      e.target.reset(); renderClients(); fillLoanClients(); renderQuickClients();
+      alert('Cliente registado.');
+    });
+
+    function renderQuickClients(){
+      const tbody = $('#quickClients'); if(!tbody) return;
+      tbody.innerHTML='';
+      state.data.clients.forEach(c=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.nome}</td><td>${c.documento||'-'}</td>
+          <td><button class="btn" data-login-client="${c.id}">Entrar como cliente</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ======================
+       Empréstimos
+       ====================== */
+    function fillLoanClients(){
+      const sel = $('#loanClient'); if(!sel) return; sel.innerHTML = '';
+      state.data.clients.forEach(c=>{
+        const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.nome; sel.appendChild(opt);
+      });
+    }
+
+    $('#formLoan').addEventListener('submit', e=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd.entries());
+      const client = state.data.clients.find(c=>c.id===payload.cliente);
+      if(!client){ alert('Selecione um cliente válido.'); return; }
+      const valor = Number(payload.valor);
+      const taxa = Number(payload.taxa);
+      const prazo = Number(payload.prazo);
+      const loan = {
+        id:id(),
+        clienteId: client.id,
+        clienteNome: client.nome,
+        valor:valor,
+        taxa:taxa,
+        prazo:prazo,
+        garantia:payload.garantia||'—',
+        finalidade:payload.finalidade||'—',
+        status:'em_analise',
+        criado:Date.now(),
+        schedule: amortizationSchedule(valor, taxa, prazo),
+        payments: []
+      };
+      state.data.loans.push(loan); state.save();
+      e.target.reset(); renderLoans(); renderDashboard();
+      location.hash = '#emprestimos';
+      alert('Pedido registado — aguarde aprovação.');
+    });
+
+    function renderLoans(){
+      const q = ($('#loanSearch').value||'').toLowerCase();
+      const st = $('#loanStatusFilter').value||'';
+      const tbody = $('#loanTable'); tbody.innerHTML = '';
+      state.data.loans
+        .filter(l=> (!st || l.status===st))
+        .filter(l=> [l.clienteNome,l.valor,l.taxa,l.prazo,l.status].join(' ').toLowerCase().includes(q))
+        .forEach(l=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${l.clienteNome}</td><td>${fmt.format(l.valor)}</td><td>${l.taxa}%</td><td>${l.prazo}m</td>
+            <td>${labelStatus(l.status)}</td>
+            <td class="tools">
+              <button class="btn" data-view-loan="${l.id}">Ver</button>
+              ${state.currentRole === 'ceo' ? `<button class="btn-ok" data-next-status="${l.id}">Avançar</button>` : ''}
+              <button class="btn-danger" data-del-loan="${l.id}">Apagar</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+    }
+
+    $('#loanSearch').addEventListener('input', renderLoans);
+    $('#loanStatusFilter').addEventListener('change', renderLoans);
+
+    function amortizationSchedule(principal, annualRatePercent, months){
+      const monthlyRate = (annualRatePercent/12)/100;
+      const parcela = months ? (principal * monthlyRate) / (1 - Math.pow(1+monthlyRate, -months)) : principal;
+      const schedule = [];
+      let balance = principal;
+      for(let m=1;m<=months;m++){
+        const juros = balance * monthlyRate;
+        const amort = parcela - juros;
+        balance = Math.max(0, balance - amort);
+        schedule.push({mes:m, parcela: Math.round(parcela), juros: Math.round(juros), amortizacao: Math.round(amort), saldo: Math.round(balance)});
+      }
+      return schedule;
+    }
+
+    /* ======================
+       Estatísticas
+       ====================== */
+    function renderStats(){
+      const {loans} = state.data;
+      const counts = { em_analise:0, aprovado:0, em_pagamento:0, liquidado:0, recusado:0 };
+      loans.forEach(l=> counts[l.status] = (counts[l.status]||0)+1 );
+      const order = ['em_analise','aprovado','em_pagamento','liquidado','recusado'];
+      const maxCount = Math.max(1, ...Object.values(counts));
+      const bars = $('#barsStatus'); bars.innerHTML='';
+      order.forEach((st, i)=>{
+        const div = document.createElement('div');
+        div.className='bar';
+        div.title = `${labelStatus(st)}: ${counts[st]||0}`;
+        div.style.height = `${Math.round(((counts[st]||0)/maxCount)*140)}px`;
+        div.style.background = [ 'var(--bar)', 'var(--bar2)', 'var(--bar3)', 'var(--ok)', 'var(--danger)' ][i%5];
+        bars.appendChild(div);
+      });
+      const byClient = {};
+      loans.forEach(l => { byClient[l.clienteNome] = (byClient[l.clienteNome]||0) + Number(l.valor||0); });
+      const top = Object.entries(byClient).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      const tBody = $('#topClients'); tBody.innerHTML='';
+      top.forEach(([nome,exp])=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${nome}</td><td>${fmt.format(exp)}</td>`;
+        tBody.appendChild(tr);
+      });
+      const months = last12Months();
+      const countByMonth = months.map(m=> state.data.loans.filter(l=> monthKey(l.criado)===m.key).length );
+      const maxM = Math.max(1, ...countByMonth);
+      const barsMonthly = $('#barsMonthly'); barsMonthly.innerHTML='';
+      countByMonth.forEach((c, idx)=>{
+        const div = document.createElement('div'); div.className='bar';
+        div.style.height = `${Math.round((c/maxM)*140)}px`;
+        div.style.background = 'var(--bar2)';
+        div.title = `${months[idx].label}: ${c}`;
+        barsMonthly.appendChild(div);
+      });
+      const heat = $('#heatMonths'); heat.innerHTML='';
+      countByMonth.forEach(c=>{
+        const cell = document.createElement('div'); cell.className='heatcell';
+        const level = Math.min(5, Math.ceil((c/Math.max(1,maxM))*5));
+        cell.setAttribute('data-level', String(level));
+        heat.appendChild(cell);
+      });
+    }
+
+    function last12Months(){
+      const arr = [];
+      const now = new Date();
+      for(let i=11;i>=0;i--){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        arr.push({ key: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, label: `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}` });
+      }
+      return arr;
+    }
+    function monthKey(ts){ const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+
+    /* ======================
+       Ações globais
+       ====================== */
+    document.addEventListener('click', e=>{
+      const vLoan = e.target.closest('[data-view-loan]');
+      if(vLoan){ openLoanModal(vLoan.getAttribute('data-view-loan')); return; }
+
+      const approve = e.target.closest('[data-approve]');
+      if(approve){
+        const idl = approve.getAttribute('data-approve');
+        if(state.currentRole !== 'ceo'){ alert('Apenas CEO pode aprovar.'); return; }
+        changeLoanStatus(idl,'aprovado'); return;
+      }
+      const reject = e.target.closest('[data-reject]');
+      if(reject){
+        const idl = reject.getAttribute('data-reject');
+        if(state.currentRole !== 'ceo'){ alert('Apenas CEO pode recusar.'); return; }
+        changeLoanStatus(idl,'recusado'); return;
+      }
+
+      const next = e.target.closest('[data-next-status]');
+      if(next){
+        const idl = next.getAttribute('data-next-status');
+        if(state.currentRole !== 'ceo'){ alert('Apenas CEO pode avançar status.'); return; }
+        advanceLoanStatus(idl); return;
+      }
+
+      const delL = e.target.closest('[data-del-loan]');
+      if(delL){
+        const idl = delL.getAttribute('data-del-loan');
+        if(confirm('Apagar empréstimo?')){ state.data.loans = state.data.loans.filter(x=>x.id!==idl); state.save(); renderLoans(); renderDashboard(); }
+        return;
+      }
+
+      const delC = e.target.closest('[data-del-client]');
+      if(delC){
+        const idc = delC.getAttribute('data-del-client');
+        if(confirm('Apagar cliente e respetivos empréstimos?')){
+          state.data.clients = state.data.clients.filter(c=>c.id!==idc);
+          state.data.loans = state.data.loans.filter(l=>l.clienteId!==idc);
+          state.save(); renderClients(); renderLoans(); renderDashboard();
+        }
+        return;
+      }
+
+      const viewClient = e.target.closest('[data-view-client]');
+      if(viewClient){ openClientModal(viewClient.getAttribute('data-view-client')); return; }
+
+      const editClient = e.target.closest('[data-edit-client]');
+      if(editClient){ openClientEditModal(editClient.getAttribute('data-edit-client')); return; }
+
+      const loginClient = e.target.closest('[data-login-client]');
+      if(loginClient){ state.currentClientId = loginClient.getAttribute('data-login-client'); state.currentRole = 'client'; $('#roleSelect').value='client'; refreshRoleUI(); alert('Entrou como cliente: ' + (state.data.clients.find(c=>c.id===state.currentClientId)?.nome||'')); setActiveView('#dashboard'); return; }
+
+      const seed = e.target.closest('#seedExamples') || e.target.closest('#seedLoans');
+      if(seed){ seedData(); return; }
+
+      if(e.target.id === 'modalClose' || e.target.id==='modalBackdrop'){ closeModal(); return; }
+
+      if(e.target.id === 'exportLoan'){
+        const id = e.target.getAttribute('data-loan'); const loan = state.data.loans.find(x=>x.id===id);
+        if(loan){ download('loan_'+id+'.json', JSON.stringify(loan,null,2)); }
+      }
+    });
+
+    /* ======================
+       Modais (Cliente / Empréstimo)
+       ====================== */
+    function openClientModal(idc){
+      const c = state.data.clients.find(x=>x.id===idc); if(!c) return;
+      $('#modalTitle').textContent = 'Cliente';
+      $('#modalBody').innerHTML = `
+        <p><strong>Nome:</strong> ${c.nome}</p>
+        <p><strong>Documento:</strong> ${c.documento||'-'}</p>
+        <p><strong>Telefone:</strong> ${c.telefone||'-'}</p>
+        <p><strong>Email:</strong> ${c.email||'-'}</p>
+        <p><strong>Conta bancária:</strong> ${c.conta||'-'}</p>
+        <p><strong>Endereço:</strong> ${c.endereco||'-'}</p>
+        <p><strong>Observações:</strong> ${c.obs||'-'}</p>
+        <div class="tools" style="margin-top:.75rem">
+          <button class="btn" data-login-client="${c.id}">Entrar como cliente</button>
+          <button class="btn" data-edit-client="${c.id}">Editar</button>
+        </div>`;
+      showModal();
+    }
+
+    function openClientEditModal(idc){
+      const c = state.data.clients.find(x=>x.id===idc); if(!c) return;
+      $('#modalTitle').textContent = 'Editar cliente';
+      $('#modalBody').innerHTML = `
+        <form id="formEditClient">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+            <div><label>Nome</label><input name="nome" value="${c.nome||''}" required /></div>
+            <div><label>Documento</label><input name="documento" value="${c.documento||''}" required /></div>
+            <div><label>Telefone</label><input name="telefone" value="${c.telefone||''}" /></div>
+            <div><label>Email</label><input name="email" type="email" value="${c.email||''}" /></div>
+            <div><label>Conta Bancária</label><input name="conta" value="${c.conta||''}" required /></div>
+            <div style="grid-column:1/3"><label>Endereço</label><input name="endereco" value="${c.endereco||''}" /></div>
+            <div style="grid-column:1/3"><label>Observações</label><textarea name="obs">${c.obs||''}</textarea></div>
+            <div class="tools" style="grid-column:1/3">
+              <button class="btn-primary" type="submit">Guardar</button>
+              <button class="btn" type="button" id="cancelEdit">Cancelar</button>
+            </div>
+          </div>
+        </form>`;
+      showModal();
+      setTimeout(()=>{
+        $('#formEditClient').addEventListener('submit', e=>{
+          e.preventDefault();
+          const fd = new FormData(e.target);
+          const upd = Object.fromEntries(fd.entries());
+          Object.assign(c, upd);
+          state.save();
+          renderClients();
+          closeModal();
+          alert('Cliente atualizado.');
+        });
+        $('#cancelEdit').addEventListener('click', closeModal);
+      }, 50);
+    }
+
+    function openLoanModal(idl){
+      const l = state.data.loans.find(x=>x.id===idl); if(!l) return;
+      $('#modalTitle').textContent = 'Empréstimo';
+      const paymentsHtml = (l.payments && l.payments.length) ? `<h4>Pagamentos</h4><ul>${l.payments.map(p=>`<li>${new Date(p.date).toLocaleDateString()} — ${fmt.format(p.amount)} ${state.data.settings.moeda}</li>`).join('')}</ul>` : '<p class="small muted">Sem pagamentos</p>';
+      const scheduleRows = l.schedule.map(s=>`<tr><td>${s.mes}</td><td>${fmt.format(s.parcela)}</td><td>${fmt.format(s.juros)}</td><td>${fmt.format(s.amortizacao)}</td><td>${fmt.format(s.saldo)}</td></tr>`).join('');
+      $('#modalBody').innerHTML = `
+        <p><strong>Cliente:</strong> ${l.clienteNome}</p>
+        <p><strong>Valor:</strong> ${fmt.format(l.valor)} ${state.data.settings.moeda}</p>
+        <p><strong>Taxa anual:</strong> ${l.taxa}%</p>
+        <p><strong>Prazo:</strong> ${l.prazo} meses</p>
+        <p><strong>Status:</strong> ${labelStatus(l.status)}</p>
+        <p><strong>Finalidade:</strong> ${l.finalidade}</p>
+        <h4>Parcela estimada</h4>
+        <p class="small">Valor estimado por mês: <strong>${fmt.format(l.schedule.length? l.schedule[0].parcela : l.valor)} ${state.data.settings.moeda}</strong></p>
+        <div style="max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:8px;padding:.5rem">
+          <table style="width:100%;border-collapse:collapse"><thead><tr><th>Mês</th><th>Parcela</th><th>Juros</th><th>Amortização</th><th>Saldo</th></tr></thead><tbody>${scheduleRows}</tbody></table>
+        </div>
+        ${paymentsHtml}
+        <div style="margin-top:.5rem" class="tools">
+          ${state.currentRole === 'ceo' && l.status==='em_analise' ? '<button class="btn-ok" data-approve="'+l.id+'">Aprovar</button><button class="btn-danger" data-reject="'+l.id+'">Recusar</button>' : ''}
+          ${state.currentRole === 'client' && state.currentClientId === l.clienteId && (l.status==='aprovado' || l.status==='em_pagamento') ? '<button class="btn" id="makePayment" data-loan="'+l.id+'">Simular pagamento</button>' : ''}
+          <button class="btn" id="exportLoan" data-loan="${l.id}">Exportar (JSON)</button>
+        </div>
+      `;
+      showModal();
+
+      setTimeout(()=>{
+        const mp = $('#makePayment'); if(mp){ mp.addEventListener('click', ()=>{ simulatePayment(mp.getAttribute('data-loan')); }); }
+      }, 50);
+    }
+
+    function simulatePayment(loanId){
+      const loan = state.data.loans.find(x=>x.id===loanId); if(!loan) return;
+      const nextIndex = loan.payments.length;
+      const nextParcela = loan.schedule[nextIndex];
+      if(!nextParcela){ alert('Já liquidado.'); return; }
+      const amount = nextParcela.parcela;
+      loan.payments.push({id:id(), amount, date:Date.now(), mes: nextParcela.mes});
+      const sumPaid = loan.payments.reduce((s,p)=>s+p.amount,0);
+      const totalToPay = loan.schedule.reduce((s,par)=>s+par.parcela,0);
+      if(sumPaid >= totalToPay - 1){ loan.status = 'liquidado'; } else { loan.status = 'em_pagamento'; }
+      state.save(); renderLoans(); renderDashboard(); openLoanModal(loanId);
+    }
+
+    function showModal(){ $('#modalBackdrop').classList.add('show'); }
+    function closeModal(){ $('#modalBackdrop').classList.remove('show'); }
+    $('#modalBackdrop').addEventListener('click', e=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+
+    /* ======================
+       Status helpers
+       ====================== */
+    function labelStatus(s){
+      return ({ em_analise:'Em análise', aprovado:'Aprovado', em_pagamento:'Em pagamento', liquidado:'Liquidado', recusado:'Recusado' })[s] || s;
+    }
+    function changeLoanStatus(idl,newStatus){
+      const l = state.data.loans.find(x=>x.id===idl); if(!l) return;
+      l.status = newStatus; state.save(); renderLoans(); renderDashboard(); openLoanModal(idl);
+    }
+    function advanceLoanStatus(idl){
+      const l = state.data.loans.find(x=>x.id===idl); if(!l) return;
+      const order = ['em_analise','aprovado','em_pagamento','liquidado'];
+      const idx = order.indexOf(l.status);
+      l.status = order[Math.min(idx+1, order.length-1)];
+      state.save(); renderLoans(); renderDashboard();
+    }
+
+    /* ======================
+       Relatórios & export & query
+       ====================== */
+    function renderReports(){
+      const {clients, loans, settings} = state.data;
+      $('#rClients').textContent = clients.length;
+      $('#rLoans').textContent = loans.length;
+      const exposure = loans.reduce((s,l)=> s + Number(l.valor||0), 0);
+      $('#rExposure').textContent = fmt.format(exposure) + ' ' + settings.moeda;
+      const avg = loans.length? exposure/loans.length : 0;
+      $('#rAvg').textContent = fmt.format(Math.round(avg)) + ' ' + settings.moeda;
+      const counts = groupCounts(loans.map(l=>l.status));
+      $('#rMix').textContent = Object.entries(counts).map(([k,v])=> `${labelStatus(k)}: ${v}`).join(' | ') || '—';
+    }
+
+    function clearQueryResults(){
+      const qc = $('#queryClients'); const ql = $('#queryLoans');
+      if(qc) qc.innerHTML = '';
+      if(ql) ql.innerHTML = '';
+      const qi = $('#queryInput'); if(qi) qi.value = '';
+    }
+
+    $('#runQuery').addEventListener('click', ()=>{
+      const qi = $('#queryInput'); if(!qi) return;
+      const q = qi.value.trim().toLowerCase();
+      if(!q){ alert('Digite uma query.'); return; }
+      const clients = state.data.clients.filter(c =>
+        [c.nome,c.documento,c.telefone,c.email,c.conta,c.endereco,c.obs].join(' ').toLowerCase().includes(q)
+      );
+      const loans = state.data.loans.filter(l =>
+        [l.clienteNome, String(l.valor), String(l.taxa), String(l.prazo), labelStatus(l.status), l.finalidade, l.garantia].join(' ').toLowerCase().includes(q)
+      );
+      const qc = $('#queryClients'); const ql = $('#queryLoans');
+      if(qc){
+        qc.innerHTML = '';
+        clients.forEach(c=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${c.nome}</td><td>${c.documento||'-'}</td><td>${c.telefone||'-'}</td><td>${c.email||'-'}</td><td>${c.conta||'-'}</td>`;
+          qc.appendChild(tr);
+        });
+      }
+      if(ql){
+        ql.innerHTML = '';
+        loans.forEach(l=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${l.clienteNome}</td><td>${fmt.format(l.valor)}</td><td>${l.taxa}%</td><td>${l.prazo}m</td><td>${labelStatus(l.status)}</td>`;
+          ql.appendChild(tr);
+        });
+      }
+      alert(`Query concluída: ${clients.length} clientes e ${loans.length} empréstimos encontrados.`);
+    });
+    $('#clearQuery').addEventListener('click', clearQueryResults);
+
+    $('#exportCSV').addEventListener('click', ()=>{
+      const rows = [['cliente','valor','taxa','prazo','status','garantia','finalidade']];
+      state.data.loans.forEach(l=> rows.push([l.clienteNome,l.valor,l.taxa,l.prazo,l.status,l.garantia,l.finalidade]));
+      const csv = rows.map(r=> r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+      download('muis_emprestimos.csv', csv);
+    });
+    $('#exportClientsCSV').addEventListener('click', ()=>{
+      const rows = [['nome','documento','telefone','email','conta','endereco','obs']];
+      state.data.clients.forEach(c=> rows.push([c.nome,c.documento||'',c.telefone||'',c.email||'',c.conta||'',c.endereco||'',c.obs||'']));
+      const csv = rows.map(r=> r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+      download('muis_clientes.csv', csv);
+    });
+    $('#exportJSON').addEventListener('click', ()=> download('muis_dados.json', JSON.stringify(state.data,null,2)));
+    $('#exportData').addEventListener('click', ()=> download('muis_backup.json', JSON.stringify(state.data,null,2)));
+    $('#resetData').addEventListener('click', ()=>{
+      if(confirm('Limpar todos os dados?')){
+        store.reset(); state.load(); setActiveView('#dashboard'); renderDashboard(); renderClients(); renderLoans(); renderQuickClients(); renderAuthUI(); clearQueryResults(); alert('Dados limpos.');
+      }
+    });
+
+    /* ======================
+       Configurações
+       ====================== */
+    function renderSettings(){
+      const f = $('#formSettings');
+      f.moeda.value = state.data.settings.moeda || 'MT';
+      f.taxaPadrao.value = state.data.settings.taxaPadrao || 18;
+      f.prazoPadrao.value = state.data.settings.prazoPadrao || 12;
+    }
+    $('#formSettings').addEventListener('submit', e=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const s = Object.fromEntries(fd.entries());
+      s.taxaPadrao = Number(s.taxaPadrao); s.prazoPadrao = Number(s.prazoPadrao);
+      state.data.settings = s; state.save(); alert('Configurações guardadas.');
+    });
+
+    /* ======================
+       Autenticação (local)
+       ====================== */
+    function currentUser(){
+      const sid = state.data.session?.userId;
+      if(!sid) return null;
+      return state.data.users.find(u=>u.id===sid) || null;
+    }
+    function renderAuthUI(){
+      const u = currentUser();
+      $('#userLabel').textContent = u ? `${u.nome} (${u.role})` : 'Não autenticado';
+      $('#logoutBtn').style.display = u ? 'inline-block' : 'none';
+      $('#logoutBtn2').style.display = u ? 'inline-block' : 'none';
+      if(u){ state.currentRole = u.role; $('#roleSelect').value = u.role === 'ceo' ? 'ceo' : (state.currentRole==='client'?'client':'visitor'); }
+      refreshRoleUI();
+    }
+
+    $('#formRegister').addEventListener('submit', e=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd.entries());
+      const exists = state.data.users.some(u=>u.email.toLowerCase() === payload.email.toLowerCase());
+      if(exists){ alert('Já existe uma conta com este email.'); return; }
+      const user = { id: id(), nome: payload.nome, email: payload.email, password: payload.password, role: payload.role || 'client' };
+      state.data.users.push(user);
+      state.data.session = { userId: user.id };
+      state.currentRole = user.role;
+      state.save();
+      e.target.reset();
+      renderAuthUI();
+      alert('Conta criada e sessão iniciada.');
+      location.hash = '#dashboard';
+    });
+
+    $('#formLogin').addEventListener('submit', e=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const email = String(fd.get('email')).toLowerCase();
+      const password = String(fd.get('password'));
+      const user = state.data.users.find(u=>u.email.toLowerCase()===email && u.password===password);
+      if(!user){ alert('Credenciais inválidas.'); return; }
+      state.data.session = { userId: user.id };
+      state.currentRole = user.role;
+      state.save();
+      renderAuthUI();
+      alert('Sessão iniciada.');
+      location.hash = '#dashboard';
+    });
+
+    $('#logoutBtn').addEventListener('click', ()=>{ state.data.session = null; state.currentRole = 'visitor'; state.save(); renderAuthUI(); alert('Sessão terminada.'); });
+    $('#logoutBtn2').addEventListener('click', ()=>{ state.data.session = null; state.currentRole = 'visitor'; state.save(); renderAuthUI(); alert('Sessão terminada.'); });
+    $('#goDashboard').addEventListener('click', ()=>{ location.hash = '#dashboard'; });
+
+    /* ======================
+       Utilitários
+       ====================== */
+    function id(){ return Math.random().toString(36).slice(2,9); }
+    function groupCounts(arr){ return arr.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{}); }
+    function download(filename, text){
+      const blob = new Blob([text], {type:'text/plain'}); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 300);
+    }
+
+    /* ======================
+       Seed / exemplos
+       ====================== */
+    function seedData(){
+      if(state.data.clients.length || state.data.loans.length){ if(!confirm('Já existem dados. Adicionar exemplos extra?')) return; }
+      const names = ['A. Matola','B. Baixa','C. Costa','D. Zimpeto','E. Polana','F. Sommerschield'];
+      names.forEach((n,i)=> state.data.clients.push({
+        id:id(), nome:n, documento:'NUIT'+(1000+i), telefone:'84'+(1000000+i),
+        email:'cliente'+i+'@ex.com', conta:'000'+(9000+i)+'/01', endereco:'Maputo', obs:''
+      }));
+      const rnd = (min,max)=> Math.round(min + Math.random()*(max-min));
+      for(let i=0;i<10;i++){
+        const c = state.data.clients[i % state.data.clients.length];
+        const valor = rnd(5000,60000);
+        const taxa = rnd(10,30);
+        const prazo = rnd(6,24);
+        const created = Date.now() - rnd(0, 1000*60*60*24*365);
+        state.data.loans.push({
+          id:id(), clienteId:c.id, clienteNome:c.nome,
+          valor, taxa, prazo, garantia:'—', finalidade:'Capital de giro',
+          status: ['em_analise','aprovado','em_pagamento','liquidado','recusado'][rnd(0,4)],
+          criado: created, schedule: amortizationSchedule(valor,taxa,prazo), payments:[]
+        });
+      }
+      if(!state.data.users.length){
+        const u1 = {id:id(), nome:'Gestor MUIS', email:'gestor@muis.ex', password:'muis123', role:'ceo'};
+        const u2 = {id:id(), nome:'Cliente Demo', email:'cliente@muis.ex', password:'demo123', role:'client'};
+        state.data.users.push(u1,u2);
+      }
+      state.save(); renderClients(); renderLoans(); renderDashboard(); renderQuickClients(); renderStats(); renderAuthUI();
+      alert('Exemplos gerados.');
+    }
+
+    /* ======================
+       Bind events extra
+       ====================== */
+    function bindEvents(){
+      $$('#nav a').forEach(a=> a.addEventListener('click', e=> { e.preventDefault(); location.hash = a.getAttribute('href'); setActiveView(a.getAttribute('href')); }));
+      $('#seedExamples').addEventListener('click', seedData);
+      fillLoanClients(); renderClients(); renderLoans(); renderDashboard(); renderQuickClients(); renderStats();
+    }
+  </script>
+</body>
+</html>
